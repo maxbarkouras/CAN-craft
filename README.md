@@ -5,4 +5,4 @@ Standard frame is shown below, for more information on the CAN 2.0 standard plea
 
 <img width="953" height="819" alt="can" src="https://github.com/user-attachments/assets/c41dff05-b224-4e7b-8ade-316a26a045ad" />
 
-https://www.eecs.umich.edu/courses/eecs461/doc/CAN_notes.pdf
+Controller Area Network (CAN); University of Michigan: https://www.eecs.umich.edu/courses/eecs461/doc/CAN_notes.pdf
