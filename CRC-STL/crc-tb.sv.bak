@@ -1,0 +1,38 @@
+module crc_tb;
+    timeunit 1ns;
+
+    bit bit_in;
+    bit clk, rst = 0, init = 0, enable = 0;
+    wire [7:0] data; 
+
+    crc_create maker(
+        .clk(clk),
+        .rst(rst),
+        .bit_in(bit_in),
+        .init(init),
+        .enable(enable)
+    );
+
+    always begin
+        #5 clk = 1;
+        #5 clk = 0;
+    end
+	 
+	initial begin
+
+        init = 1;
+        data = 8'hA2;
+
+        #5;
+        enable = 1;
+        for(int i=8;i>0;i--) begin
+
+            bit_in = data[i];
+            $display("%d", bit_in);
+            #5;
+
+        end
+
+    end
+		 
+endmodule

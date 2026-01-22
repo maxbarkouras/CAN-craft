@@ -1,0 +1,14 @@
+module crc_create(
+
+    input logic clk;
+    input logic rst;
+    input logic enable;
+
+    input logic frame_in[7:0];
+
+    // output logic [14:0] crc;
+)
+
+    assign frame_in = frame_in + 8'd1;
+
+endmodule
