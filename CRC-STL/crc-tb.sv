@@ -1,5 +1,6 @@
 module crc_tb;
     timeunit 1ns;
+    timeprecision 1ps;
 
     bit bit_in;
     bit clk, rst = 0, init = 0, enable = 0;
