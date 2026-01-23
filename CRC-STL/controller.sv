@@ -10,11 +10,6 @@ module controller(
     input logic TX_REQ,
     output logic TX_BUSY,
     output logic TX_COMPLETE,
-    output logic [6:0] tx_index,
-
-    input logic [3:0] tx_dlc_copy,
-    input logic [7:0] tx_data_copy[7:0],
-    input logic [10:0] tx_id_copy,
 
     // output logic [3:0] RX_DLC,
     // output logic [7:0] RX_DATA [7:0],
@@ -26,6 +21,11 @@ module controller(
     output logic bit_out
 
 );
+
+    logic [6:0] tx_index;
+    logic [3:0] tx_dlc_copy;
+    logic [7:0] tx_data_copy [7:0];
+    logic [10:0] tx_id_copy;
 
     // Tx
     always_ff @(posedge clk) begin
@@ -43,22 +43,25 @@ module controller(
         end
         else if (TX_BUSY) begin
             
-            case (tx_index) inside
-                0 : bit_out <= 0;
-
-                [1:11] : bit_out <= (tx_id_copy[11-(tx_index)]);
-                    
-                [12:14] : bit_out <= 0;
-
-                [15:18] : bit_out <= (tx_dlc_copy[18-(tx_index)]);
-
-                [19:(19+(tx_dlc_copy*8)-1)] : bit_out <= tx_data_copy[(((tx_index-19)/8)*8)+(7-((tx_index-19) % 8))];
-
-                (19 + (tx_dlc_copy*8)) : TX_COMPLETE <= 1;
-
-                default:;
-
-            endcase
+            if (tx_index == 0) begin
+                bit_out <= 0;
+            end 
+            else if (tx_index >= 1 && tx_index <= 11) begin
+                bit_out <= tx_id_copy[11 - tx_index];
+            end 
+            else if (tx_index >= 12 && tx_index <= 14) begin
+                bit_out <= 0;
+            end 
+            else if (tx_index >= 15 && tx_index <= 18) begin
+                bit_out <= tx_dlc_copy[18 - tx_index];
+            end 
+            else if (tx_index >= 19 && tx_index <= (19 + (tx_dlc_copy * 8) - 1)) begin
+                bit_out <= tx_data_copy[(tx_index - 19) / 8][7 - ((tx_index - 19) % 8)];
+            end 
+            else if (tx_index == (19 + (tx_dlc_copy * 8))) begin
+                TX_COMPLETE <= 1;
+                bit_out <= 1;
+            end
 
             tx_index <= tx_index+1;
 
@@ -71,7 +74,10 @@ module controller(
         end
         else if (TX_REQ) begin
             TX_BUSY <= 1;
-            tx_data_copy <= TX_DATA;
+            tx_index <= 0;
+            for (int i = 0; i < 8; i++) begin
+                tx_data_copy[i] <= TX_DATA[i];
+            end
             tx_dlc_copy <= TX_DLC;
             tx_id_copy <= TX_ID;
         end

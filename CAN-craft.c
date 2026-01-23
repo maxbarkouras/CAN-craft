@@ -133,8 +133,8 @@ int main(){
     can_msg CAN1;
     can_init(&CAN1);
 
-    uint8_t data[] = {0x10, 0x02, 0x01, 0x55, 0x21, 0x13, 0xff, 0x71};
-    can_set(&CAN1, 0x7ff, data, 8);
+    uint8_t data[] = {0x55, 0x32, 0x18, 0x10, 0x01, 0x05};
+    can_set(&CAN1, 0x150, data, 6);
 
     int frame_size = craft_frame(&CAN1);
     if(frame_size < 0) return frame_size;

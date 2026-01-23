@@ -2,24 +2,28 @@ module controller_tb;
     timeunit 1ns;
     timeprecision 1ps;
 
-    bit bit_in;
-    bit clk, rst = 0, init = 0, data_en = 0, id_en = 0;
-    bit [63:0] data_recv;
-    bit [10:0] id_recv;
-    bit [7:0] data; 
-    bit [10:0] can_id;
-    bit [7:0] can_data [0:7];
-    bit [2:0] data_bytes;
+    bit clk, rst, init;
+
+    bit TX_REQ, TX_BUSY, TX_COMPLETE;
+    bit [3:0] TX_DLC;
+    reg [7:0] TX_DATA [7:0];
+    bit [10:0] TX_ID;
+
+    bit bit_out;
+
+    bit [127:0] collector;
 
     controller maker(
         .clk(clk),
         .rst(rst),
-        .bit_in(bit_in),
         .init(init),
-        .data_en(data_en),
-        .packet(data_recv),
-        .id_en(id_en),
-        .can_id(id_recv)
+        .TX_DLC(TX_DLC),
+        .TX_DATA(TX_DATA),
+        .TX_ID(TX_ID),
+        .bit_out(bit_out),
+        .TX_REQ(TX_REQ),
+        .TX_BUSY(TX_BUSY),
+        .TX_COMPLETE(TX_COMPLETE)
     );
 
     always begin
@@ -29,48 +33,64 @@ module controller_tb;
 	 
 	initial begin
 
-        data_bytes = 3'd3;
-        //can_data = 0;
-        can_data[0] = 8'h10;
-        can_data[1] = 8'h02;
-        can_data[2] = 8'h01;
-        can_id = 11'h7ff;
+        TX_DLC = 3'd6;
+        TX_DATA[0] = 8'h55;
+        TX_DATA[1] = 8'h32;
+        TX_DATA[2] = 8'h18;
+        TX_DATA[3] = 8'h10;
+        TX_DATA[4] = 8'h01;
+        TX_DATA[5] = 8'h5;
+        TX_ID = 11'h150;
 
         init = 1;
         @(posedge clk);
         init = 0;
 
-        id_en = 1;
-        for(int i=11; i>0; i--) begin
+        TX_REQ = 1;
 
+        while(!TX_COMPLETE) begin
             @(negedge clk);
-            bit_in = can_id[i-1];
+            collector = {collector[126:0], bit_out};
             @(posedge clk);
-            $display("sending: %b", bit_in);
-
         end
 
-        id_en = 0;
-        @(posedge clk);
-        $display("id recieved: 0x%x",id_recv);
+        TX_REQ = 0;
 
-        data_en = 1;
-        for(int i=data_bytes; i>0; i--) begin
-            for(int j=0; j<8; j++) begin
+        $display("%b", collector);
 
-                @(negedge clk);
-                bit_in = can_data[data_bytes-i][7-j];
-                @(posedge clk);
-                $display("sending: %b", bit_in);
-
-            end
-            $display("sent: 0x%x", can_data[data_bytes-i]);
-        end
-
-        data_en = 0;
-        @(posedge clk);
-        $display("data recieved: 0x%x",data_recv);
         $finish;
+
+        // id_en = 1;
+        // for(int i=11; i>0; i--) begin
+
+        //     @(negedge clk);
+        //     bit_in = can_id[i-1];
+        //     @(posedge clk);
+        //     $display("sending: %b", bit_in);
+
+        // end
+
+        // id_en = 0;
+        // @(posedge clk);
+        // $display("id recieved: 0x%x",id_recv);
+
+        // data_en = 1;
+        // for(int i=data_bytes; i>0; i--) begin
+        //     for(int j=0; j<8; j++) begin
+
+        //         @(negedge clk);
+        //         bit_in = can_data[data_bytes-i][7-j];
+        //         @(posedge clk);
+        //         $display("sending: %b", bit_in);
+
+        //     end
+        //     $display("sent: 0x%x", can_data[data_bytes-i]);
+        // end
+
+        // data_en = 0;
+        // @(posedge clk);
+        // $display("data recieved: 0x%x",data_recv);
+        // $finish;
 
     end
 		 
